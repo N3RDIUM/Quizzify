@@ -1,2 +1,2 @@
 Make an app for teachers, the app will help teachers test their student's knowledge. There will be a leaderboard, according to points the student has obtained from the teacher's assignments (quizzes).
-The app will warn the user about the assignment time, window focus, and will also send email notifications.
+The app will warn the user about the assignment time, window focus, and will also send email notifications. The classname value of registreation will add a nnew 'organization' to which students can join.
