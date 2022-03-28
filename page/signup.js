@@ -22,7 +22,13 @@ function signIn(account_type){
             email: user.user.email,
             account_type: account_type,
             uid: user.user.uid,
-            verified: user.user.emailVerified
+            verified: user.user.emailVerified,
+            points:0
         })
+        auth.signInWithEmailAndPassword(_username, _password).then(function(user) {
+            console.log(user)
+        }).catch(function(error) {
+            alert(error.message)
+        });
     })
 }
