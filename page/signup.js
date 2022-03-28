@@ -14,18 +14,15 @@ function setName(n){
     _name = n
 }
 
-function signIn(account_type){ // account_type: "student" or "teacher"
-    if(account_type == "student"){
-        auth.createUserWithEmailAndPassword(_username, _password).then(function(user) {
-            console.log(user)
-        }).catch(function(error) {
-            alert(error.message)
-        });
-    } else if(account_type == "teacher"){
-        auth.createUserWithEmailAndPassword(_username, _password).then(function(user) {
-            console.log(user)
-        }).catch(function(error) {
-            alert(error.message)
-        });
-    }
+function signIn(account_type){
+    auth.createUserWithEmailAndPassword(_username, _password).then(function(user) {
+        let users = db.collection("users")
+        users.doc(user.user.uid).set({
+            name: _name,
+            email: user.user.email,
+            account_type: account_type,
+            uid: user.user.uid,
+            verified: user.user.emailVerified
+        })
+    })
 }

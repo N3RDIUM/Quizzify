@@ -26,6 +26,13 @@
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+
+        // if the user is already logged in, redirect to the home page
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // window.location.href = "home.php";
+            }
+        });
     </script>
 </head>
 
