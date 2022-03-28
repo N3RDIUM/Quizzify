@@ -14,6 +14,12 @@ function setName(n){
     _name = n
 }
 
+auth.onAuthStateChanged(user => {
+    if (user) {
+        window.location.href = "app/index.html";
+    }
+});
+
 function signIn(account_type){
     auth.createUserWithEmailAndPassword(_username, _password).then(function(user) {
         let users = db.collection("users")
@@ -25,10 +31,7 @@ function signIn(account_type){
             verified: user.user.emailVerified,
             points:0
         })
-        auth.signInWithEmailAndPassword(_username, _password).then(function(user) {
-            console.log(user)
-        }).catch(function(error) {
-            alert(error.message)
-        });
+    }).then(() => {
+        window.location.href = "app/index.html"
     })
 }
