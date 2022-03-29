@@ -1,0 +1,36 @@
+<!DOCTYPE html> 
+    <head>
+        <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-auth.js"></script>
+        <script>
+            const firebaseConfig = {
+          
+              apiKey: "AIzaSyDxCJ3afAgR1gtMa4mYH5MUbwGAq_5v3Fc",
+          
+              authDomain: "quizzify-17f00.firebaseapp.com",
+          
+              projectId: "quizzify-17f00",
+          
+              storageBucket: "quizzify-17f00.appspot.com",
+          
+              messagingSenderId: "962996481970",
+          
+              appId: "1:962996481970:web:8e1bf63c3b07657c6d7eab",
+          
+              measurementId: "G-B59GNRTZTK"
+          
+            };
+          
+          
+            // Initialize Firebase
+            const app = firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            
+            // sign out
+            auth.signOut().then(function() {
+              window.location.href = "../index.html";
+            }).catch(function(error) {
+              alert(error.message);
+            });
+          </script>
+</html>
