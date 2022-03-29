@@ -45,7 +45,7 @@
                 firestore.collection('users').doc(uid).get().then(function(doc) {
                     if (doc.data().account_type != 'teacher') {
                         alert('you have no permission to access this page')
-                        //window.location.href = "../../index.html";
+                        window.location.href = "../../index.html";
                     }
                 })
             } else {

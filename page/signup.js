@@ -25,7 +25,25 @@ function signIn(account_type){
             verified: user.user.emailVerified
         }).then(
             function(){
-                window.location.href = "./app/index.html"
+                if(account_type == "student"){
+                    // set points
+                    users.doc(user.user.uid).update({
+                        points: 10
+                    })
+                    // leaderboard/users is a list of uids, so we need to add the uid to the list
+                    db.collection("users").doc("leaderboard").get().then((values) => {
+                        let leaderboard = values.data()
+                        leaderboard.users.push(user.user.uid)
+                        db.collection("users").doc("leaderboard").set(leaderboard).then(
+                            function(){
+                                window.location.href = "./app/index.html"
+                            }
+                        )
+                    })
+                }
+                else{
+                    window.location.href = "./app/index.html"
+                }
             }
         )
     })

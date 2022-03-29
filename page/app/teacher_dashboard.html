@@ -40,20 +40,43 @@
         const firestore = firebase.firestore();
 
         user = null;
-        auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(function(user) {
             if (user) {
-                user = user;
-                document.getElementById("username").innerHTML = user.email;
-                let uid = user.uid
+                uid = user.uid
                 firestore.collection('users').doc(uid).get().then(function(doc) {
-                    if (doc.data().account_type != 'student') {
-                        window.location.href = "./teacher_dashboard.html";
+                    if (doc.data().account_type != 'teacher') {
+                        alert('you have no permission to access this page')
+                        window.location.href = "../../index.html";
                     }
                 })
             } else {
-                window.location.href = "../login.html";
+                // No user is signed in.
+                window.location.href = "../../index.html";
             }
         });
+        function GotoEditor(){
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    ref = firestore.collection("users").doc(user.uid);
+                    ref.get().then(function(doc) {
+                        if (doc.exists) {
+                            if(doc.data().account_type == "teacher"){
+                                window.location.href = "./editor/index.html";
+                            }
+                            else{
+                                alert("You are not authorized to access this page.");
+                            }
+                        } else {
+                            alert("Please login again.");
+                        }
+                    }).catch(function(error) {
+                        alert("Error getting document:", error);
+                    });
+                } else {
+                    window.location.href = "../index.html";
+                }
+            });
+        }
       </script>
 </head>
 
@@ -106,6 +129,7 @@
                 </nav>
                 <div class="container-fluid">
                     <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                        <h3 class="text-dark mb-0">Dashboard</h3><button class="btn btn-primary" type="button" onclick="GotoEditor()">Create quiz</button>
                         <button class="btn btn-primary" type="button" onclick="GotoClass()">Your class</button>
                     </div>
                     <div class="row">

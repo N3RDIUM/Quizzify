@@ -49,6 +49,52 @@
             }
         });
 
+        // load Leaderboard
+        firestore.collection("users").doc("leaderboard").get().then(function(querySnapshot) {
+            var data = querySnapshot.data();
+            var leaderboard = data.users;
+            var leaderboard_html = "";
+            for (var i = 0; i < leaderboard.length; i++) {
+                firestore.collection("users").doc(leaderboard[i]).get().then(function(querySnapshot) {
+                    try{
+                        var data = querySnapshot.data();
+                        leaderboard[i] = [data.name, data.points, data.email]
+                    } catch(err) {
+                        leaderboard[i] = ["Unknown", 0, "unknown"]
+                    }
+                }).then(async () => {
+                     // sort leaderboard by score
+                    leaderboard.sort(function(a, b) {
+                        return b[1] - a[1];
+                    });
+                    // only take first 10 users in another array
+                    temp = []
+                    for (var i = 0; i < leaderboard.length; i++) {
+                        if (i < 10 && typeof(leaderboard[i]) != "string") {
+                            temp.push(leaderboard[i]);
+                        }
+                    }
+                    leaderboard = temp;
+                    // create html
+                    for (var i = 0; i < leaderboard.length; i++) {
+                        leaderboard_html += "<tr><td>" + (i + 1) + "</td><td>" + leaderboard[i][0] + "</td><td>" + leaderboard[i][1] + "</td></tr>";
+                    }
+                    await auth.onAuthStateChanged(user => {
+                        let userid_found = false;
+                        for(var i in leaderboard){
+                            if(leaderboard[i][2] == user.email){
+                                userid_found = true;
+                            }
+                        }
+                        if (user && !userid_found) {
+                            // if the user is not in top 10, add the user in the last
+                            leaderboard_html += "<tr><td>" + (leaderboard.length + 1) + "</td><td>" + user.displayName + "</td><td>" + data.points + "</td></tr>";
+                        }
+                    })
+                    document.getElementById("leaderboard").innerHTML = leaderboard_html;
+                });
+            }
+        });
       </script>
 </head>
 
@@ -104,29 +150,19 @@
                     <div class="card shadow">
                         <div class="card-body">
                             <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
-                                <table class="table my-0" id="dataTable">
+                                <table class="table my-0">
                                     <thead>
                                         <tr>
+                                            <th>Rank</th>
                                             <th>Name</th>
-                                            <th>Position</th>
                                             <th>Points</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="leaderboard">
                                         <tr>
-                                            <td><img class="rounded-circle me-2" width="30" height="30" src="assets/img/avatars/avatar5.jpeg">somePythonProgrammer</td>
-                                            <td>#1</td>
-                                            <td>1000</td>
+                                            <td>Loading...</td>
+                                            <td>Loading...</td>
                                         </tr>
-                                        <tr></tr>
-                                        <tr></tr>
-                                        <tr></tr>
-                                        <tr></tr>
-                                        <tr></tr>
-                                        <tr></tr>
-                                        <tr></tr>
-                                        <tr></tr>
-                                        <tr></tr>
                                     </tbody>
                                     <tfoot>
                                         <tr></tr>
