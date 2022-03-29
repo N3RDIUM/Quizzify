@@ -28,7 +28,10 @@ function signIn(account_type){
                 if(account_type == "student"){
                     // set points
                     users.doc(user.user.uid).update({
-                        points: 10
+                        points: 100,
+                        achievements: ["50 points"],
+                        badges: ["joined"],
+                        leaderboard_position: 1,
                     })
                     // leaderboard/users is a list of uids, so we need to add the uid to the list
                     db.collection("users").doc("leaderboard").get().then((values) => {
