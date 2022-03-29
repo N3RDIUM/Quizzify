@@ -87,8 +87,11 @@
                             }
                         }
                         if (user && !userid_found) {
-                            // if the user is not in top 10, add the user in the last
-                            leaderboard_html += "<tr><td>" + (leaderboard.length + 1) + "</td><td>" + user.displayName + "</td><td>" + data.points + "</td></tr>";
+                            firebase.firestore().collection("users").doc(user.uid).get().then(function(doc){
+                                if(doc.get().account_type == "student"){
+                                    leaderboard_html += "<tr><td>" + (leaderboard.length + 1) + "</td><td>" + user.displayName + "</td><td>" + data.points + "</td></tr>";
+                                }
+                            });
                         }
                     })
                     document.getElementById("leaderboard").innerHTML = leaderboard_html;
