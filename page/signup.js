@@ -22,7 +22,8 @@ function signIn(account_type){
             email: user.user.email,
             account_type: account_type,
             uid: user.user.uid,
-            verified: user.user.emailVerified
+            verified: user.user.emailVerified,
+            classes: [],
         }).then(
             function(){
                 if(account_type == "student"){
