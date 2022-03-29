@@ -39,6 +39,21 @@
         const auth = firebase.auth();
         const firestore = firebase.firestore();
 
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                uid = user.uid
+                firestore.collection('users').doc(uid).get().then(function(doc) {
+                    if (doc.data().account_type != 'teacher') {
+                        alert('you have no permission to access this page')
+                        //window.location.href = "../../index.html";
+                    }
+                })
+            } else {
+                // No user is signed in.
+                window.location.href = "../../index.html";
+            }
+        });
+
         var userID, nQuizzes, quizRef;
         function syncData(){
             firebase.auth().onAuthStateChanged(function(user) {
@@ -58,13 +73,15 @@
         }
 
         function deleteQuiz() {
-            if (confirm("Are you sure you want to delete this quiz?")) {
-                firestore.collection('quizzes').doc('quiz' + nQuizzes.toString()).delete().then(function() {
-                    alert("Quiz deleted successfully");
-                    window.location.href = "../index.html";
-                }).catch(function(error) {
-                    alert("Error deleting quiz: " + error);
-                });
+            if(!saved){
+                if (confirm("Are you sure you want to delete this quiz?")) {
+                    firestore.collection('quizzes').doc('quiz' + nQuizzes.toString()).delete().then(function() {
+                        alert("Quiz deleted successfully");
+                        window.location.href = "../index.html";
+                    }).catch(function() {
+                        alert("You have unsaved changes. Please save before deleting.");
+                    });
+                }
             }
         }
 
@@ -82,7 +99,7 @@
                 </a>
                 <hr class="sidebar-divider my-0">
                 <ul class="navbar-nav text-light" id="accordionSidebar">
-                    <li class="nav-item"><a class="nav-link active" href="blank.html"><i class="fa fa-pencil"></i><span>Quiz Editor</span></a><a class="nav-link active" onclick="deleteQuiz()"><i class="fa fa-close"></i><span>Back to dashboard</span></a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#"><i class="fa fa-pencil"></i><span>Quiz Editor</span></a><a class="nav-link active" onclick="deleteQuiz()"><i class="fa fa-close"></i><span>Back to dashboard</span></a></li>
                 </ul>
                 <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
             </div>
@@ -107,14 +124,14 @@
                             </li>
                         </ul>
                     </div>
-                </nav><input class="form-control-plaintext" type="text" value="Enter question title" oninput="setTitle(this.value)">
+                </nav><input class="form-control-plaintext" type="text" id = "title_input" value="Enter question title" oninput="setTitle(this.value)">
                 <div class="container-fluid">
-                    <div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(0, !correct_options[0]);"><input class="form-control-plaintext" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(0, this.value)"/></div>
-                    <div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(1, !correct_options[1]);"><input class="form-control-plaintext" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(1, this.value)"/></div>
-                    <div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(2, !correct_options[2]);"><input class="form-control-plaintext" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(2, this.value)"/></div>
-                    <div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(3, !correct_options[3]);"><input class="form-control-plaintext" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(3, this.value)"/></div>
+                    <div class="form-check"><input id = "option1" class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(0, !correct_options[0]);"><input class="form-control-plaintext" id = "option_text1" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(0, this.value)"/></div>
+                    <div class="form-check"><input id = "option2" class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(1, !correct_options[1]);"><input class="form-control-plaintext" id = "option_text2" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(1, this.value)"/></div>
+                    <div class="form-check"><input id = "option3" class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(2, !correct_options[2]);"><input class="form-control-plaintext" id = "option_text3" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(2, this.value)"/></div>
+                    <div class="form-check"><input id = "option4" class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="setCorrect(3, !correct_options[3]);"><input class="form-control-plaintext" id = "option_text4" type="text" value="Enter option here" style="width: 25%;" oninput="setOption(3, this.value)"/></div>
                 </div>
-                <div class="btn-group" role="group" style="align-self: center; width:100%"><button class="btn btn-primary" type="button">Back</button><button class="btn btn-primary" type="button" onclick = "save_question()">Save</button><button class="btn btn-primary" type="button">Next</button></div>
+                <div class="btn-group" role="group" style="align-self: center; width:100%"><button class="btn btn-primary" type="button" onclick = "decrementIndex()">Back</button><button class="btn btn-primary" type="button" onclick = "save_question()">Save</button><button class="btn btn-primary" type="button" onclick = "incrementIndex()">Next</button></div>
             </div>
             <footer class="bg-white sticky-footer">
                 <div class="container my-auto">
