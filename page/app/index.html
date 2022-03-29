@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="assets/fonts/fontawesome5-overrides.min.css">
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-firestore.js"></script>
+    
     <script>
         const firebaseConfig = {
       
@@ -35,12 +37,31 @@
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        
-        auth.onAuthStateChanged(function(user) {
-          if (!user) {
-            window.location.href = "../index.html";
-          }
-        });
+        const firestore = firebase.firestore();
+
+        function GotoEditor(){
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    ref = firestore.collection("users").doc(user.uid);
+                    ref.get().then(function(doc) {
+                        if (doc.exists) {
+                            if(doc.data().account_type == "teacher"){
+                                window.location.href = "./editor/index.html";
+                            }
+                            else{
+                                alert("You are not authorized to access this page.");
+                            }
+                        } else {
+                            alert("Please login again.");
+                        }
+                    }).catch(function(error) {
+                        alert("Error getting document:", error);
+                    });
+                } else {
+                    window.location.href = "../index.html";
+                }
+            });
+        }
       </script>
 </head>
 
@@ -93,7 +114,7 @@
                 </nav>
                 <div class="container-fluid">
                     <div class="d-sm-flex justify-content-between align-items-center mb-4">
-                        <h3 class="text-dark mb-0">Dashboard</h3>
+                        <h3 class="text-dark mb-0">Dashboard</h3><button class="btn btn-primary" type="button" onclick="GotoEditor()">Create quiz</button>
                     </div>
                     <div class="row">
                         <div class="col-md-6 col-xl-3 mb-4">
