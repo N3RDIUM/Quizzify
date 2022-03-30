@@ -25,14 +25,14 @@ function signIn(account_type){
             verified: user.user.emailVerified,
             classes: [],
         }).then(
-            function(){
+            async function(){
                 if(account_type == "student"){
                     // set points
                     users.doc(user.user.uid).update({
                         points: 100,
                         leaderboard_position: 1,
                         completed_quizzes: [],
-                        point_history: [],
+                        point_history: [0, 100],
                     })
                     // leaderboard/users is a list of uids, so we need to add the uid to the list
                     db.collection("users").doc("leaderboard").get().then((values) => {
@@ -46,6 +46,9 @@ function signIn(account_type){
                     })
                 }
                 else{
+                    await users.doc(user.user.uid).update({
+                        quiz_history: [],
+                    })
                     window.location.href = "./app/index.html"
                 }
             }

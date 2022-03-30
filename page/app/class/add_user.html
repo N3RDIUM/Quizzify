@@ -84,6 +84,14 @@
                   window.location.href = "../../index.html";
               }
           });
+          await firestore.collection('classes').doc(class_id).get().then(function(doc){
+              let user_data = doc.data();
+              let studentHist = user_data.student_history;
+              studentHist.push(student[studentHist.length - 1] + 1);
+              firestore.collection('users').doc(uid).update({
+                  quiz_history: studentHist
+              });
+          });
           await firestore.collection("users").doc(uid).get().then(function(doc) {
               if (doc.exists && doc.data().classes.toString().indexOf(class_id) == -1) {
                   firestore.collection('classes').doc(class_id).get().then(function(doc){

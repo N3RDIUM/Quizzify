@@ -87,6 +87,15 @@ function save_question(){
             quizzes: quizzes
         });
     });
+
+    firestore.collection('users').doc(userID).get().then(function(doc){
+        let user_data = doc.data();
+        let quizHist = user_data.quiz_history;
+        quizHist.push(quizHist[quizHist.length - 1] + 1);
+        firestore.collection('users').doc(userID).update({
+            quiz_history: quizHist
+        });
+    });
     clearFields();
     window.location.href = "../index.html"
 }

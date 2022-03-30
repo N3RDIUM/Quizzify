@@ -71,6 +71,7 @@
         syncData()
 
         function append_to_point_history(uid, num){
+            console.log(uid)
             firestore.collection('users').doc(uid).get().then(
                 function(doc){
                     var point_history = doc.data().point_history
@@ -178,28 +179,28 @@
             }
         }
 
-        function submitAnswer(){
+        async function submitAnswer(){
             let answer = userResponse;
             console.log(userResponse, quizData.answers[currentIndex])
             if (answer.toString() == quizData.answers[currentIndex].toString()) {
                 alert('Correct Answer')
+                await append_to_point_history(userID, 10)
                 firestore.collection('users').doc(userID).get().then(async function(doc){
                     let score = doc.data().points;
                     score += 10;
                     firestore.collection('users').doc(userID).update({
                         points: score
                     })
-                    await append_to_point_history(userID, 10)
                 })
             } else {
                 alert('Wrong Answer')
+                await append_to_point_history(userID, -5)
                 firestore.collection('users').doc(userID).get().then(async function(doc){
                     let score = doc.data().points;
                     score -= 5;
                     firestore.collection('users').doc(userID).update({
                         points: score
                     })
-                    await append_to_point_history(userID, -5)
                 })
             }
             nextQuestion()
