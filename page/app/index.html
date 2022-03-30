@@ -86,6 +86,41 @@
                 window.location.href = "../login.html";
             }
         });
+
+        function GotoClass(){
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    ref = firestore.collection("users").doc(user.uid);
+                    ref.get().then(function(doc) {
+                        if (doc.exists) {
+                            if(doc.data().account_type == "teacher"){
+                                console.log(doc.data())
+                                if (doc.data().classes.toString() == ["no_class"].toString()) {
+                                    window.location.href = "./create_class.html"
+                                }
+                                else {
+                                    window.location.href = "./select_class.html";
+                                }
+                            }
+                            else{
+                                if (doc.data().classes.toString() == ["no_class"].toString()) {
+                                    alert("you have no class")
+                                }
+                                else {
+                                    window.location.href = "./select_class.html";
+                                }
+                            }
+                        } else {
+                            alert("Please login again.");
+                        }
+                    }).catch(function(error) {
+                        alert("Error getting document:", error);
+                    });
+                } else {
+                   //window.location.href = "../index.html";
+                }
+            });
+        }
       </script>
 </head>
 

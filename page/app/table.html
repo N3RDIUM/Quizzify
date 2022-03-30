@@ -50,54 +50,29 @@
         });
 
         // load Leaderboard
-        firestore.collection("users").doc("leaderboard").get().then(function(querySnapshot) {
+        var leaderboard_html = "";
+        firestore.collection("users").doc("leaderboard").get().then(async function(querySnapshot) {
             var data = querySnapshot.data();
             var leaderboard = data.users;
-            var leaderboard_html = "";
+            var _ = []
             for (var i = 0; i < leaderboard.length; i++) {
-                firestore.collection("users").doc(leaderboard[i]).get().then(function(querySnapshot) {
+                await firestore.collection("users").doc(leaderboard[i]).get().then(function(querySnapshot) {
                     try{
                         var data = querySnapshot.data();
-                        leaderboard[i] = [data.name, data.points, data.email]
+                        _.push([data.name, data.points, data.email])
                     } catch(err) {
-                        leaderboard[i] = ["Unknown", 0, "unknown"]
+                        _.push(["Unknown", 0, "unknown"])
                     }
-                }).then(async () => {
-                     // sort leaderboard by score
-                    leaderboard.sort(function(a, b) {
-                        return b[1] - a[1];
-                    });
-                    // only take first 10 users in another array
-                    temp = []
-                    for (var i = 0; i < leaderboard.length; i++) {
-                        if (i < 10 && typeof(leaderboard[i]) != "string") {
-                            temp.push(leaderboard[i]);
-                        }
-                    }
-                    leaderboard = temp;
-                    // create html
-                    for (var i = 0; i < leaderboard.length; i++) {
-                        leaderboard_html += "<tr><td>" + (i + 1) + "</td><td>" + leaderboard[i][0] + "</td><td>" + leaderboard[i][1] + "</td></tr>";
-                    }
-                    await auth.onAuthStateChanged(user => {
-                        let userid_found = false;
-                        for(var i in leaderboard){
-                            if(leaderboard[i][2] == user.email){
-                                userid_found = true;
-                            }
-                        }
-                        if (user && !userid_found) {
-                            firebase.firestore().collection("users").doc(user.uid).get().then(function(doc){
-                                if(doc.get().account_type == "student"){
-                                    leaderboard_html += "<tr><td>" + (leaderboard.length + 1) + "</td><td>" + user.displayName + "</td><td>" + data.points + "</td></tr>";
-                                }
-                            });
-                        }
-                    })
-                    document.getElementById("leaderboard").innerHTML = leaderboard_html;
                 });
             }
-        });
+            _.sort(function(a, b) {
+                return b[1] - a[1];
+            });
+            for (var i = 0; i < _.length; i++) {
+                leaderboard_html += "<tr><td>" + (i+1) + "</td><td>" + _[i][0] + "</td><td>" + _[i][1] + "</td><td>" + _[i][2] + "</td></tr>";
+            }
+            document.getElementById("leaderboard").innerHTML = leaderboard_html;
+        })
       </script>
 </head>
 

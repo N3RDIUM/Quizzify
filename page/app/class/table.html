@@ -4,12 +4,89 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Class leaderboard - Quizzify</title>
+    <title>Table - Quizzify</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome5-overrides.min.css">
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-firestore.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+      
+          apiKey: "AIzaSyDxCJ3afAgR1gtMa4mYH5MUbwGAq_5v3Fc",
+      
+          authDomain: "quizzify-17f00.firebaseapp.com",
+      
+          projectId: "quizzify-17f00",
+      
+          storageBucket: "quizzify-17f00.appspot.com",
+      
+          messagingSenderId: "962996481970",
+      
+          appId: "1:962996481970:web:8e1bf63c3b07657c6d7eab",
+      
+          measurementId: "G-B59GNRTZTK"
+      
+        };
+      
+      
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const firestore = firebase.firestore();
+
+        user = null;
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                user = user;
+                // load Leaderboard
+                uid = user.uid
+                let class_id
+                firestore.collection('users').doc(uid).get().then(async function(doc) {
+                    // get current class
+                    var classes = doc.data().classes
+                    current_class_index = await localStorage.getItem('class')
+                    if(current_class_index == null){
+                        window.location.href = '../select_class.html'
+                    }
+                    class_id = classes[current_class_index]
+                    if(class_id == undefined){
+                        window.location.href = "../select_class.html";
+                    }
+
+                    // get all class users
+                    firestore.collection('classes').doc(class_id).get().then(async function(querySnapshot) {
+                        var data = querySnapshot.data();
+                        var leaderboard = data.users;
+                        var _ = []
+                        for (var i = 0; i < leaderboard.length; i++) {
+                            await firestore.collection("users").doc(leaderboard[i]).get().then(function(querySnapshot) {
+                                try{
+                                    var data = querySnapshot.data();
+                                    _.push([data.name, data.points, data.email])
+                                } catch(err) {
+                                    _.push(["Unknown", 0, "unknown"])
+                                }
+                            });
+                        }
+                        _.sort(function(a, b) {
+                            return b[1] - a[1];
+                        });
+                        for (var i = 0; i < _.length; i++) {
+                            leaderboard_html += "<tr><td>" + (i+1) + "</td><td>" + _[i][0] + "</td><td>" + _[i][1] + "</td><td>" + _[i][2] + "</td></tr>";
+                        }
+                        document.getElementById("leaderboard").innerHTML = leaderboard_html;
+                    })
+                })
+            } else {
+                window.location.href = "../login.html";
+            }
+        });
+      </script>
 </head>
 
 <body id="page-top">
@@ -21,9 +98,9 @@
                 </a>
                 <hr class="sidebar-divider my-0">
                 <ul class="navbar-nav text-light" id="accordionSidebar">
-                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-tachometer-alt"></i><span>Overview</span></a></li>
+                    <li class="nav-item"><a class="nav-link active" href="index.html"><i class="fas fa-tachometer-alt"></i><span>Overview</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i><span>Class dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link active" href="table.html"><i class="fas fa-table"></i><span>In-class Leaderboard</span></a><a class="nav-link" href="../index.html"><i class="fa fa-angle-left"></i><span>Back to user</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="table.html"><i class="fas fa-table"></i><span>In-class Leaderboard</span></a><a class="nav-link" href="../index.html"><i class="fa fa-angle-left"></i><span>Back to user</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
                 </ul>
@@ -50,9 +127,9 @@
                             </li>
                             <div class="d-none d-sm-block topbar-divider"></div>
                             <li class="nav-item dropdown no-arrow">
-                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small">Class name here</span></a>
-                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a><a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Settings</a><a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Activity log</a>
-                                        <div class="dropdown-divider"></div><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
+                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small" id = "username">Loading...</span></a>
+                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><a class="dropdown-item" href="../profile.html"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a>
+                                        <div class="dropdown-divider"></div><a class="dropdown-item" href="../logout.html"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
                                     </div>
                                 </div>
                             </li>
@@ -64,19 +141,18 @@
                     <div class="card shadow">
                         <div class="card-body">
                             <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
-                                <table class="table my-0" id="dataTable">
+                                <table class="table my-0">
                                     <thead>
                                         <tr>
+                                            <th>Rank</th>
                                             <th>Name</th>
-                                            <th>Position</th>
                                             <th>Points</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="leaderboard">
                                         <tr>
-                                            <td><img class="rounded-circle me-2" width="30" height="30" src="avatars/avatar5.jpeg">somePythonProgrammer</td>
-                                            <td>#1</td>
-                                            <td>1000</td>
+                                            <td>Loading...</td>
+                                            <td>Loading...</td>
                                         </tr>
                                     </tbody>
                                     <tfoot>

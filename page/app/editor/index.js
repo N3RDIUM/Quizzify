@@ -68,7 +68,8 @@ function save_question(){
         options: options,
         correct_options: correct_options,
         creator: userID,
-        assignees: []
+        assignees: [],
+        class: current_class,
     }
     //console.log(question);
     quizRef.set(question);

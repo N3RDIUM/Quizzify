@@ -89,11 +89,16 @@
                                     window.location.href = "./create_class.html"
                                 }
                                 else {
-                                    window.location.href = "./class/index.html";
+                                    window.location.href = "./select_class.html";
                                 }
                             }
                             else{
-                                alert("You are not authorized to access this page.");
+                                if (doc.data().classes.toString() == ["no_class"].toString()) {
+                                    alert("you have no class")
+                                }
+                                else {
+                                    window.location.href = "./select_class.html";
+                                }
                             }
                         } else {
                             alert("Please login again.");
