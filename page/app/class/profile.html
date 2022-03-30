@@ -58,8 +58,8 @@
                         // get class details
                         var class_details = await firestore.collection('classes').doc(class_id).get()
                         class_name = class_details.data().class_name
-                        document.getElementById('class_name').innerHTML = class_name 
-                        document.getElementById('username').innerHTML = class_name
+                        document.getElementById('class_name').innerHTML = class_name
+                        document.getElementById('classname').innerHTML = class_name
                     }
                 })
             } else {
