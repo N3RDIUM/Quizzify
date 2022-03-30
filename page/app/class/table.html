@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-firestore.js"></script>
+    <link rel="icon" href="https://raw.githubusercontent.com/somePythonProgrammer/Quizzify/main/QUIZZIFY.png">
     
     <script>
         const firebaseConfig = {
@@ -40,13 +41,13 @@
         const firestore = firebase.firestore();
 
         user = null;
-        auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(async user => {
             if (user) {
                 user = user;
                 // load Leaderboard
                 uid = user.uid
                 let class_id
-                firestore.collection('users').doc(uid).get().then(async function(doc) {
+                await firestore.collection('users').doc(uid).get().then(async function(doc) {
                     // get current class
                     var classes = doc.data().classes
                     current_class_index = await localStorage.getItem('class')
@@ -56,12 +57,14 @@
                     class_id = classes[current_class_index]
                     if(class_id == undefined){
                         window.location.href = "../select_class.html";
-                    }
+                }
 
-                    // get all class users
-                    firestore.collection('classes').doc(class_id).get().then(async function(querySnapshot) {
+                // get all class users
+                firestore.collection('classes').doc(class_id).get().then(async function(querySnapshot) {
                         var data = querySnapshot.data();
-                        var leaderboard = data.users;
+                        document.getElementById('username').innerHTML = data.class_name;
+                        var leaderboard = data.students;
+                        var leaderboard_html = ""
                         var _ = []
                         for (var i = 0; i < leaderboard.length; i++) {
                             await firestore.collection("users").doc(leaderboard[i]).get().then(function(querySnapshot) {

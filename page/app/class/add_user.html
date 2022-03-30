@@ -18,6 +18,7 @@
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-firestore.js"></script>
+    <link rel="icon" href="https://raw.githubusercontent.com/somePythonProgrammer/Quizzify/main/QUIZZIFY.png">
 
     <script>
       const firebaseConfig = {
@@ -55,10 +56,36 @@
           </tr>
       `
       let class_ids, current_class_index, class_id;
-
+      
       async function add_user(uid){
-          firestore.collection("users").doc(uid).get().then(function(doc) {
-              if (doc.exists && doc.data().classes.toString().indexOf(class_ids[current_class_index]) == -1) {
+          await auth.onAuthStateChanged(async function(user) {
+              if (user) {
+                uid = user.uid
+                await firestore.collection('users').doc(uid).get().then(async function(doc) {
+                    if (doc.data().account_type != 'teacher') {
+                        alert('you have no permission to access this page')
+                        window.location.href = "../../index.html";
+                        class_ids = doc.data().classes
+                        current_class_index = localStorage.getItem('class')
+                        if(current_class_index == undefined){
+                          window.location.href = "../select_class.html";
+                        }
+                        class_id = class_ids[current_class_index]
+                        if(class_id == undefined){
+                          window.location.href = "../select_class.html";
+                        }
+                        document.getElementById('username').innerHTML = firestore.collection('users').doc(uid).get().then(function(doc){
+                            return doc.data().class_name
+                        })
+                    }
+                })
+              } else {
+                  // No user is signed in.
+                  window.location.href = "../../index.html";
+              }
+          });
+          await firestore.collection("users").doc(uid).get().then(function(doc) {
+              if (doc.exists && doc.data().classes.toString().indexOf(class_id) == -1) {
                   firestore.collection('classes').doc(class_id).get().then(function(doc){
                       users = doc.data().students
                       users.push(uid)
@@ -113,20 +140,37 @@
           })
       }
 
-      auth.onAuthStateChanged(async function(user) {
-          if (user) {
-            uid = user.uid
-            await firestore.collection('users').doc(uid).get().then(async function(doc) {
-                if (doc.data().account_type != 'teacher') {
-                    alert('you have no permission to access this page')
-                    window.location.href = "../../index.html";
-                }
-            })
-          } else {
-              // No user is signed in.
-              window.location.href = "../../index.html";
-          }
-      });
+      async function refresh(){
+        await auth.onAuthStateChanged(async function(user) {
+            if (user) {
+              uid = user.uid
+              await firestore.collection('users').doc(uid).get().then(async function(doc) {
+                  if (doc.data().account_type != 'teacher') {
+                      alert('you have no permission to access this page')
+                      window.location.href = "../../index.html";
+                  } else {
+                      class_ids = doc.data().classes
+                      current_class_index = localStorage.getItem('class')
+                      if(current_class_index == undefined){
+                        window.location.href = "../select_class.html";
+                      }
+                      class_id = class_ids[current_class_index]
+                      if(class_id == undefined){
+                        window.location.href = "../select_class.html";
+                      }
+                      console.log(class_id)
+                      document.getElementById('username').innerHTML = await firestore.collection('users').doc(uid).get().then(function(doc){
+                          return doc.data().class_name
+                      })
+                  }
+              })
+            } else {
+                // No user is signed in.
+                window.location.href = "../../index.html";
+            }
+        });
+      }
+      refresh()
     </script>
   </head>
 
@@ -232,7 +276,7 @@
                       aria-expanded="false"
                       data-bs-toggle="dropdown"
                       href="#"
-                      ><span class="d-none d-lg-inline me-2 text-gray-600 small"
+                      ><span class="d-none d-lg-inline me-2 text-gray-600 small" id = "username"
                         >Your name here</span
                       ></a
                     >
