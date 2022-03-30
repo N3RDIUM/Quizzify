@@ -88,42 +88,12 @@
         }
 
         let currentIndex, quizData;
-        async function getQuiz(){
+       async function getQuiz(){
             setFullScreen()
-            quizID = await localStorage.getItem('quiz')
+            quizID = await localStorage.getItem('quiz')  
             if (quizID == undefined) {
                 window.location.href = "../select_quiz.html";
             }
-            await firestore.collection('quizzes').doc(quizID).get().then(async function(data){
-                    quiz = await data.data()
-                    assignees = quiz.assignees;
-                    let current = {
-                        id: userID,
-                        completed: false,
-                        viewed: true,
-                    }
-                    // if the user is not in the assignees array, add them
-                    if(!assignees.includes(current)){
-                        assignees.push(current)
-                    }
-                    //else, update the value
-                    else{
-                        if(!assignees[assignees.indexOf(current)].completed){
-                            for(let i = 0; i < assignees.length; i++){
-                                if(assignees[i].id == userID){
-                                    assignees[i].completed = true;
-                                }
-                            }
-                        }
-                        else {
-                            alert('You have already submitted your answers for this quiz')
-                            window.location.href = "../select_quiz.html"
-                        }
-                    }
-                    firestore.collection('quizzes').doc(quizID).update({
-                        assignees: assignees
-                    })
-                })
             quizRef = firestore.collection('quizzes').doc(quizID).get().then(function(data){
                 quiz = data.data();
                 currentIndex = 0;
@@ -153,32 +123,7 @@
                 setElementData()
             } else {
                 alert('Quiz Completed')
-                firestore.collection('quizzes').doc(quizID).get().then(function(data){
-                    quiz = data.data();
-                    assignees = quiz.assignees;
-                    let current = {
-                        id: userID,
-                        completed: true,
-                        viewed: true,
-                    }
-                    // if the user is not in the assignees array, add them
-                    if(!assignees.includes(current)){
-                        assignees.push(current)
-                    }
-                    //else, update the value
-                    else{
-                        for(let i = 0; i < assignees.length; i++){
-                            if(assignees[i].id == userID){
-                                assignees[i].completed = true;
-                            }
-                        }
-                    }
-                    firestore.collection('quizzes').doc(quizID).update({
-                        assignees: assignees
-                    }).then(() => {
-                        window.location.href = "../../index.html";
-                    })
-                })
+                window.location.href = "../index.html";
             }
         }
 
@@ -232,7 +177,7 @@
         }
         cheats = 0
         // when the document loses focus or another tab is selected
-        function userCheated() {
+        function  _handle_cheat() {
             if(!document.hasFocus()){
                 if (cheats < 0){
                     cheats += 1
@@ -255,7 +200,7 @@
       </script>
 </head>
 
-<body id="page-top" onblur="userCheated()" onchange="userCheated()" onfocus="userCheated()" onpagehide="userCheated()">
+<body id="page-top" onblur=" _handle_cheat()" onchange=" _handle_cheat()" onfocus=" _handle_cheat()" onpagehide=" _handle_cheat()">
     <div id="wrapper">
         <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0">
             <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">

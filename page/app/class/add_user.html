@@ -58,65 +58,51 @@
       let class_ids, current_class_index, class_id;
       
       async function add_user(uid){
-          await auth.onAuthStateChanged(async function(user) {
-              if (user) {
-                uid = user.uid
-                await firestore.collection('users').doc(uid).get().then(async function(doc) {
-                    if (doc.data().account_type != 'teacher') {
-                        alert('you have no permission to access this page')
-                        window.location.href = "../../index.html";
-                        class_ids = doc.data().classes
-                        current_class_index = localStorage.getItem('class')
-                        if(current_class_index == undefined){
-                          window.location.href = "../select_class.html";
-                        }
-                        class_id = class_ids[current_class_index]
-                        if(class_id == undefined){
-                          window.location.href = "../select_class.html";
-                        }
-                        document.getElementById('username').innerHTML = firestore.collection('users').doc(uid).get().then(function(doc){
-                            return doc.data().class_name
-                        })
-                    }
-                })
-              } else {
-                  // No user is signed in.
-                  window.location.href = "../../index.html";
-              }
-          });
-          await firestore.collection('classes').doc(class_id).get().then(function(doc){
+        await firestore.collection('users').doc(uid).get().then(function(doc) {
+            console.log(doc.data())
+            if (doc.data().account_type != 'teacher') {
+                class_id = localStorage.getItem('class')
+                if(class_id == undefined){
+                  window.location.href = "../select_class.html";
+                }
+            }
+        }).then(function(){
+          firestore.collection('classes').doc(class_id).get().then(function(doc){
               let user_data = doc.data();
               let studentHist = user_data.student_history;
-              studentHist.push(student[studentHist.length - 1] + 1);
+              studentHist.push(studentHist[studentHist.length - 1] + 1);
               firestore.collection('users').doc(uid).update({
                   quiz_history: studentHist
               });
-          });
-          await firestore.collection("users").doc(uid).get().then(function(doc) {
-              if (doc.exists && doc.data().classes.toString().indexOf(class_id) == -1) {
-                  firestore.collection('classes').doc(class_id).get().then(function(doc){
-                      users = doc.data().students
-                      users.push(uid)
-                      firestore.collection('classes').doc(class_id).update({
-                          students: users
+          }).then(function(){
+            firestore.collection("users").doc(uid).get().then(function(doc) {
+                if (doc.exists) {
+                    firestore.collection('classes').doc(class_id).get().then(function(doc){
+                        users = doc.data().students
+                        users.push(uid)
+                        firestore.collection('classes').doc(class_id).update({
+                            students: users
+                        })
+                    })
+                } else {
+                    alert("User is already in the class!")
+                }
+            }).then(function(){
+                firestore.collection('users').doc(uid).get().then(function(doc){
+                          classes = doc.data().classes
+                          if(classes.toString() == ["no_class"].toString()){
+                              classes = [class_id]
+                          }
+                          else{
+                              classes.push(class_id)
+                          }
+                          firestore.collection('users').doc(uid).update({
+                              classes: classes
+                          })
                       })
-                  })
-                  firestore.collection('users').doc(uid).get().then(function(doc){
-                      classes = doc.data().classes
-                      if(classes.toString() == ["no_class"].toString()){
-                          classes = [class_id]
-                      }
-                      else{
-                          classes.push(class_id)
-                      }
-                      firestore.collection('users').doc(uid).update({
-                          classes: classes
-                      })
-                  })
-              } else {
-                  alert("User is already in the class!")
-              }
+              })
           })
+        })
       }
 
       function search_user(terms){
@@ -158,18 +144,10 @@
                       window.location.href = "../../index.html";
                   } else {
                       class_ids = doc.data().classes
-                      current_class_index = localStorage.getItem('class')
-                      if(current_class_index == undefined){
-                        window.location.href = "../select_class.html";
-                      }
-                      class_id = class_ids[current_class_index]
+                      class_id = localStorage.getItem('class')
                       if(class_id == undefined){
                         window.location.href = "../select_class.html";
                       }
-                      console.log(class_id)
-                      document.getElementById('username').innerHTML = await firestore.collection('users').doc(uid).get().then(function(doc){
-                          return doc.data().class_name
-                      })
                   }
               })
             } else {

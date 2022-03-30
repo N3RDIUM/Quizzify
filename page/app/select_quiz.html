@@ -69,8 +69,6 @@
                         if(doc.data().account_type == "teacher"){
                             window.location.href = "../index.html";
                         }
-                    } else {
-                        console.log("No such document!");
                     }
                 }).then(function() {
                     for (i = 0; i < classes.length; i++) {
@@ -86,6 +84,15 @@
             } else {
                 // No user is signed in.
                 window.location.href = "../../index.html";
+            }
+            if(document.getElementById('quizzes').innerHTML == ""){
+                document.getElementById('quizzes').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1 style="text-align: center; width: 100%; height: 100%;">No quizzes found</h1>
+                    </div>
+                </div>
+                `
             }
         });
     </script>

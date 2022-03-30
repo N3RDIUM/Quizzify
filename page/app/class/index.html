@@ -41,10 +41,11 @@
         const firestore = firebase.firestore();
 
         // get the user's classes
+        let current_class
         auth.onAuthStateChanged(user => {
             if (user) {
                 uid = user.uid;
-                firestore.collection('users').doc(uid).get().then(function(snapshot){
+                firestore.collection('users').doc(uid).get().then(async function(snapshot){
                     data = snapshot.data();
                     if(data.account_type != "teacher"){
                         document.getElementById("createquiz").style.opacity = "0.5";
@@ -56,12 +57,11 @@
                             window.location.href = "../editor/index.html";
                         }
                     }
-                    //later set this to localStorage
-                    current_class = 0
-                    if(data.classes[current_class] == undefined){
+                    current_class = await  localStorage.getItem("class");
+                    if(current_class == undefined){
                         window.location.href = "../select_class.html";
                     }
-                    firestore.collection('classes').doc(data.classes[current_class]).get().then((snapshot) => {
+                    firestore.collection('classes').doc(current_class).get().then((snapshot) => {
                         _class = snapshot.data();
                         document.getElementById("classname").innerHTML = _class.class_name;
                         document.getElementById("classname_big").innerHTML = _class.class_name + ': Overview'
@@ -81,9 +81,6 @@
         })
 
         let quiz_data = []
-        auth.onAuthStateChanged(async function(user) {
-            
-        });
 
         // function which returns array of string numbers till given value
         function get_array(value){
@@ -115,7 +112,7 @@
         async function getPoints(ctx){
             _ctx = ctx.getContext('2d');
 
-            quiz_data = await firebase.firestore().collection('classes').doc(data.classes[current_class]).get().then(snapshot => {
+            quiz_data = await firebase.firestore().collection('classes').doc(current_class).get().then(snapshot => {
                 return snapshot.data().student_history;
             })
             // just a line chart without labels on the x axis

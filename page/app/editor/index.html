@@ -80,12 +80,7 @@
                         window.location.href = "../../index.html";
                     } else {
                         // get current class
-                        var classes = doc.data().classes;
-                        current_class_index = await localStorage.getItem('class')
-                        if(current_class_index == null || current_class_index == undefined){
-                            window.location.href = '../select_class.html'
-                        }
-                        current_class = classes[current_class_index]
+                        current_class = await localStorage.getItem('class')
                         if(current_class == undefined){
                             window.location.href = '../select_class.html'
                         }

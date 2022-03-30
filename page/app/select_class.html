@@ -42,8 +42,9 @@
         const auth = firebase.auth();
         const firestore = firebase.firestore();
 
-        function selectClass(index){
-            localStorage.setItem("class", index);
+        async function selectClass(index){
+            console.log(index);
+            await localStorage.setItem("class", index);
             window.location.href = "class/index.html";
         }
 
@@ -51,30 +52,34 @@
         classes = [];
         auth.onAuthStateChanged(function(user) {
             if (user) {
-                uid = user.uid
-                firestore.collection('users').doc(uid).get().then(function(doc) {
+                firestore.collection('users').doc(user.uid).get().then(function(doc) {
                         function return_class_html(classname, index){
                             return `
                             <div class="row">
                                 <div class="col-md-6">
                                     <h1 style="text-align: center; width: 100%; height: 100%;">${classname}</h1>
                                 </div>
-                                <div class="col"><button class="btn btn-primary" type="button" style="width: 100%; height: 100%;" onclick = "selectClass(${index})">select</button></div>
+                                <div class="col"><button class="btn btn-primary" type="button" style="width: 100%; height: 100%;" onclick = "selectClass('${index}')">select</button></div>
                             </div>
                             `
                         }
-                        for(var i in doc.data().classes){
-                            var classid = doc.data().classes[i]
-                            firestore.collection('classes').doc(classid).get().then(function(doc){
-                                var classname = doc.data().class_name
-                                classes.push(classname)
-                                var html = return_class_html(classname, i)
-                                document.getElementById('classes').innerHTML += html
-                            })
+                        classes = doc.data().classes;
+                        for(i = 0; i < classes.length; i++){
+                            class_name = firestore.collection('classes').doc(classes[i]).get().then(function(doc){
+                                document.getElementById("classes").innerHTML += return_class_html(doc.data().class_name, doc.id);
+                            });
                         }
-                        if(doc.data().classes.length == 0){
-                            alert('You do not have any classes.')
-                            window.location.href = "../index.html"
+                        console.log(classes);
+                        if(classes.length == 0){
+                            document.getElementById("classes").innerHTML = `
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h1 style="text-align: center; width: 100%; height: 100%;">No classes found</h1>
+                                </div>
+                            </div>
+                            `
+                            alert("No classes found, please create one.");
+                            window.location.href = "create_class.html";
                         }
                 })
             } else {
