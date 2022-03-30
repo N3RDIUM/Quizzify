@@ -61,7 +61,7 @@
                                     owner: uid,
                                     students: [],
                                     quizzes: [],
-                                    student_history: [],
+                                    student_history: [0],
                                 }).then(function(docRef) {
                                     let class_id = docRef.id
                                     firestore.collection('users').doc(uid).get().then(function(doc) {

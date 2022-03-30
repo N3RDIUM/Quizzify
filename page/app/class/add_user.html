@@ -75,10 +75,11 @@
                 let user_data = doc.data();
                 let studentHist = user_data.student_history;
                 studentHist.push(studentHist[studentHist.length - 1] + 1);
-                firestore.collection('users').doc(uid).update({
-                    quiz_history: studentHist
-                });
+                firestore.collection('classes').doc(class_id).update({
+                    student_history: studentHist
+                })
             }).then(function(){
+              console.log("Updated user history")
               firestore.collection("users").doc(uid).get().then(function(doc) {
                   if (doc.exists) {
                       firestore.collection('classes').doc(class_id).get().then(function(doc){
