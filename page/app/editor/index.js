@@ -79,7 +79,16 @@ function save_question(){
     nQuizzes ++
     saved = true;
 
+    firestore.collection("classes").doc(current_class).get().then(function(doc){
+        let class_data = doc.data();
+        let quizzes = class_data.quizzes;
+        quizzes.push(quizRef.id);
+        firestore.collection("classes").doc(current_class).update({
+            quizzes: quizzes
+        });
+    });
     clearFields();
+    window.location.href = "../index.html"
 }
 
 function clearFields(){

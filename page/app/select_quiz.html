@@ -4,12 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Profile - Quizzify</title>
+    <title>Select a quiz - Quizzify</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome5-overrides.min.css">
+    <link rel="stylesheet" href="assets/css/Contact-Form-Clean.css">
+    <link rel="stylesheet" href="assets/css/Login-Form-Clean.css">
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-firestore.js"></script>
@@ -41,16 +43,52 @@
         const firestore = firebase.firestore();
 
         user = null;
-        auth.onAuthStateChanged(user => {
+        classes = [];
+        let quizzes;
+        function return_class_html(quizname, id){
+            return `
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 style="text-align: center; width: 100%; height: 100%;">${quizname}</h1>
+                </div>
+                <div class="col"><button class="btn btn-primary" type="button" style="width: 100%; height: 100%;" onclick = "selectQuiz('${id}')">select</button></div>
+            </div>
+            `
+        }
+        function selectQuiz(id){
+            localStorage.setItem("quiz", id);
+            window.location.href = "./solver/index.html";
+        }
+        auth.onAuthStateChanged(async function(user) {
             if (user) {
-                user = user;
-                document.getElementById("username").innerHTML = user.email;
+                uid = user.uid
+                let classes;
+                await firestore.collection('users').doc(uid).get().then(function(doc) {
+                    if (doc.exists) {
+                        classes = doc.data().classes;
+                        if(doc.data().account_type == "teacher"){
+                            window.location.href = "../index.html";
+                        }
+                    } else {
+                        console.log("No such document!");
+                    }
+                }).then(function() {
+                    for (i = 0; i < classes.length; i++) {
+                        firestore.collection('quizzes').where('class', '==', classes[i]).get().then(function(querySnapshot) {
+                            querySnapshot.forEach(function(doc) {
+                                document.getElementById('quizzes').innerHTML += return_class_html(doc.data().titles[0], doc.id);
+                            });
+                        });
+                    }
+                }).catch(function(error) {
+                    console.log("Error getting document:", error);
+                });
             } else {
-                window.location.href = "../login.html";
+                // No user is signed in.
+                window.location.href = "../../index.html";
             }
         });
-
-      </script>
+    </script>
 </head>
 
 <body id="page-top">
@@ -63,7 +101,7 @@
                 <hr class="sidebar-divider my-0">
                 <ul class="navbar-nav text-light" id="accordionSidebar">
                     <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link active" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a></li>
+                     
                     <li class="nav-item"><a class="nav-link" href="table.html"><i class="fas fa-table"></i><span>Leaderboard</span></a><a class="nav-link" href="logout.html"><i class="fa fa-angle-left"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
@@ -92,8 +130,7 @@
                             <div class="d-none d-sm-block topbar-divider"></div>
                             <li class="nav-item dropdown no-arrow">
                                 <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small" id = "username"></span></a>
-                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><a class="dropdown-item" href="profile.html"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a>
-                                        <div class="dropdown-divider"></div><a class="dropdown-item" href="logout.html"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
+                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><div class="dropdown-divider"></div><a class="dropdown-item" href="logout.html"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
                                     </div>
                                 </div>
                             </li>
@@ -101,42 +138,11 @@
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h3 class="text-dark mb-4">Profile</h3>
-                    <div class="row mb-3">
-                        <div class="col-lg-4">
-                            <div class="card mb-3">
-                                <div class="card-body text-center shadow"><img class="rounded-circle mb-3 mt-4" src="assets/img/dogs/image2.jpeg" width="160" height="160">
-                                    <div class="mb-3"><button class="btn btn-primary btn-sm" type="button">Change Photo</button></div>
-                                </div>
-                            </div>
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="text-primary fw-bold m-0">Projects</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h4 class="small fw-bold">Server migration<span class="float-end">20%</span></h4>
-                                    <div class="progress progress-sm mb-3">
-                                        <div class="progress-bar bg-danger" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%;"><span class="visually-hidden">20%</span></div>
-                                    </div>
-                                    <h4 class="small fw-bold">Sales tracking<span class="float-end">40%</span></h4>
-                                    <div class="progress progress-sm mb-3">
-                                        <div class="progress-bar bg-warning" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 40%;"><span class="visually-hidden">40%</span></div>
-                                    </div>
-                                    <h4 class="small fw-bold">Customer Database<span class="float-end">60%</span></h4>
-                                    <div class="progress progress-sm mb-3">
-                                        <div class="progress-bar bg-primary" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"><span class="visually-hidden">60%</span></div>
-                                    </div>
-                                    <h4 class="small fw-bold">Payout Details<span class="float-end">80%</span></h4>
-                                    <div class="progress progress-sm mb-3">
-                                        <div class="progress-bar bg-info" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%;"><span class="visually-hidden">80%</span></div>
-                                    </div>
-                                    <h4 class="small fw-bold">Account setup<span class="float-end">Complete!</span></h4>
-                                    <div class="progress progress-sm mb-3">
-                                        <div class="progress-bar bg-success" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"><span class="visually-hidden">100%</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <h3 class="text-dark mb-4">Please select a quiz to continue.</h3>
+                    <div class="card shadow"></div>
+                </div>
+                <div class="card"></div>
+                <div class="container" id="quizzes">
                 </div>
             </div>
             <footer class="bg-white sticky-footer">

@@ -55,7 +55,7 @@
             }
         });
 
-        var userID, nQuizzes, quizRef;
+        var userID, nQuizzes, quizRef, quizID;
         function syncData(){
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user) {
@@ -70,18 +70,54 @@
 
         syncData()
 
+        function append_to_point_history(uid, num){
+            firestore.collection('users').doc(uid).get().then(
+                function(doc){
+                    var point_history = doc.data().point_history
+                    point_history.push(point_history[point_history.length - 1] + num)
+                    // limit length to 100
+                    if (point_history.length > 100){
+                        point_history = point_history.slice(100)
+                    }
+                    firestore.collection('users').doc(uid).update({
+                        point_history: point_history
+                    })
+                }
+            )
+        }
+
         let currentIndex, quizData;
-        const quizID = 'quiz17';
-        function getQuiz(){
-            firestore.collection('quizzes').doc(quizID).get().then(function(data){
-                    quiz = data.data();
+        async function getQuiz(){
+            quizID = await localStorage.getItem('quiz')
+            if (quizID == undefined) {
+                window.location.href = "../select_quiz.html";
+            }
+            await firestore.collection('quizzes').doc(quizID).get().then(async function(data){
+                    quiz = await data.data()
                     assignees = quiz.assignees;
                     let current = {
                         id: userID,
                         completed: false,
                         viewed: true,
                     }
-                    assignees.push(current)
+                    // if the user is not in the assignees array, add them
+                    if(!assignees.includes(current)){
+                        assignees.push(current)
+                    }
+                    //else, update the value
+                    else{
+                        if(!assignees[assignees.indexOf(current)].completed){
+                            for(let i = 0; i < assignees.length; i++){
+                                if(assignees[i].id == userID){
+                                    assignees[i].completed = true;
+                                }
+                            }
+                        }
+                        else {
+                            alert('You have already submitted your answers for this quiz')
+                            window.location.href = "../select_quiz.html"
+                        }
+                    }
                     firestore.collection('quizzes').doc(quizID).update({
                         assignees: assignees
                     })
@@ -121,7 +157,18 @@
                         completed: true,
                         viewed: true,
                     }
-                    assignees.push(current)
+                    // if the user is not in the assignees array, add them
+                    if(!assignees.includes(current)){
+                        assignees.push(current)
+                    }
+                    //else, update the value
+                    else{
+                        for(let i = 0; i < assignees.length; i++){
+                            if(assignees[i].id == userID){
+                                assignees[i].completed = true;
+                            }
+                        }
+                    }
                     firestore.collection('quizzes').doc(quizID).update({
                         assignees: assignees
                     }).then(() => {
@@ -136,21 +183,23 @@
             console.log(userResponse, quizData.answers[currentIndex])
             if (answer.toString() == quizData.answers[currentIndex].toString()) {
                 alert('Correct Answer')
-                firestore.collection('users').doc(userID).get().then(function(doc){
+                firestore.collection('users').doc(userID).get().then(async function(doc){
                     let score = doc.data().points;
                     score += 10;
                     firestore.collection('users').doc(userID).update({
                         points: score
                     })
+                    await append_to_point_history(userID, 10)
                 })
             } else {
                 alert('Wrong Answer')
-                firestore.collection('users').doc(userID).get().then(function(doc){
+                firestore.collection('users').doc(userID).get().then(async function(doc){
                     let score = doc.data().points;
                     score -= 5;
                     firestore.collection('users').doc(userID).update({
                         points: score
                     })
+                    await append_to_point_history(userID, -5)
                 })
             }
             nextQuestion()

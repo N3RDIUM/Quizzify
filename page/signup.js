@@ -30,9 +30,9 @@ function signIn(account_type){
                     // set points
                     users.doc(user.user.uid).update({
                         points: 100,
-                        achievements: ["50 points"],
-                        badges: ["joined"],
                         leaderboard_position: 1,
+                        completed_quizzes: [],
+                        point_history: [],
                     })
                     // leaderboard/users is a list of uids, so we need to add the uid to the list
                     db.collection("users").doc("leaderboard").get().then((values) => {

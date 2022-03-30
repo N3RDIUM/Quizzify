@@ -28,7 +28,8 @@
             const auth = firebase.auth();
             
             // sign out
-            auth.signOut().then(function() {
+            auth.signOut().then(async function() {
+              await localStorage.clear();
               window.location.href = "../index.html";
             }).catch(function(error) {
               alert(error.message);
