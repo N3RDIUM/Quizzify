@@ -89,6 +89,7 @@
 
         let currentIndex, quizData;
         async function getQuiz(){
+            setFullScreen()
             quizID = await localStorage.getItem('quiz')
             if (quizID == undefined) {
                 window.location.href = "../select_quiz.html";
@@ -136,6 +137,7 @@
             })
         }
         function setElementData(){
+            setFullScreen()
             document.getElementById('title_input').value = quizData.titles[currentIndex];
             document.getElementById('option_text1').value = quizData.options[currentIndex][0];
             document.getElementById('option_text2').value = quizData.options[currentIndex][1];
@@ -145,6 +147,7 @@
         getQuiz()
 
         function nextQuestion(){
+            setFullScreen()
             currentIndex++;
             if (currentIndex < quizData.titles.length) {
                 setElementData()
@@ -180,6 +183,7 @@
         }
 
         async function submitAnswer(){
+            setFullScreen()
             let answer = userResponse;
             console.log(userResponse, quizData.answers[currentIndex])
             if (answer.toString() == quizData.answers[currentIndex].toString()) {
@@ -207,6 +211,7 @@
         }
 
         function prevQuestion(){
+            setFullScreen()
             currentIndex--;
             if (currentIndex >= 0) {
                 setElementData()
@@ -216,10 +221,41 @@
         function setResponse(index, value){
             userResponse[index] = value
         }
+
+        // set to fullscreen
+        function setFullScreen(){
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen();
+            }
+        }
+        cheats = 0
+        // when the document loses focus or another tab is selected
+        function userCheated() {
+            if(!document.hasFocus()){
+                if (cheats < 0){
+                    cheats += 1
+                    alert("Please don't do that! the answer will get submitted automatically and you will lose 5 points")
+                }
+                else if (cheats >= 3){
+                    submitAnswer()
+                    append_to_point_history(userID, -5)
+                    firestore.collection('users').doc(userID).get().then(async function(doc){
+                        let score = doc.data().points;
+                        score -= 5;
+                        firestore.collection('users').doc(userID).update({
+                            points: score
+                        })
+                    })
+                    cheats = 0
+                }
+            }
+        }
       </script>
 </head>
 
-<body id="page-top">
+<body id="page-top" onblur="userCheated()" onchange="userCheated()" onfocus="userCheated()" onpagehide="userCheated()">
     <div id="wrapper">
         <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0">
             <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
